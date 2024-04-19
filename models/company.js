@@ -49,15 +49,41 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
-    const companiesRes = await db.query(
-          `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
+  static async findAll(filters = {}) {
+    let query = `SELECT handle,
+                        name,
+                        description,
+                        num_employees AS "numEmployees",
+                        logo_url AS "logoUrl"
+                  FROM companies `;
+
+    let conditionals = [];
+    let values = [];
+    let {name, minEmployees, maxEmployees} = filters;
+
+    //test that min isn't greater than max
+    if(maxEmployees !== undefined && minEmployees !== undefined && minEmployees > maxEmployees) 
+      throw new BadRequestError("Error: The minimum employee filter can't be greater than the maximum employee filter");
+    
+    
+    if(name !== undefined ) {
+      values.push(`%${name}%`);
+      conditionals.push(`name ILIKE $${values.length}`);
+    }
+    if(minEmployees !== undefined ) {
+      values.push(minEmployees)
+      conditionals.push(`num_employees >= $${values.length}`);
+    }
+    if(maxEmployees !== undefined){
+      values.push(maxEmployees)
+      conditionals.push(`num_employees <= $${values.length}`);
+    }
+    //any conditional
+    if(conditionals.length > 0) {
+      query += ' WHERE ' + conditionals.join(' AND ');
+    } 
+    query += ' ORDER BY name';
+    const companiesRes = await db.query(query, values);
     return companiesRes.rows;
   }
 

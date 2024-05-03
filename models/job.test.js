@@ -8,6 +8,7 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  jobIds
 } = require("./_testCommon.js");
 
 beforeAll(commonBeforeAll);
@@ -21,214 +22,183 @@ describe("create", function () {
   const newJob = {
     companyHandle: "c1",
     title: "test job",
-    salary: "42",
+    salary: 42,
     equity: "0.2",
   };
 
   test("works", async function () {
-    let job = await job.create(newJob);
-    expect(job).toEqual(newJob);
-
     const result = await Job.create(newJob);
-    expect(result.rows).toEqual([
+    expect(result).toEqual(
       {
         ...newJob,
         id: expect.any(Number),
       },
-    ]);
+    );
   });
+});
+
 /************************************** findAll */
-/*
+
 describe("findAll", function () {
   test("works: no filter", async function () {
-    let companies = await Company.findAll();
-    expect(companies).toEqual([
+    let jobs = await Job.findAll();
+    expect(jobs).toEqual([
       {
-        handle: "c1",
-        name: "C1",
-        description: "Desc1",
-        numEmployees: 1,
-        logoUrl: "http://c1.img",
+        id: jobIds[0],
+        title: "JobA",
+        salary: 1000,
+        equity: "0.1",
+        companyHandle: "c1"
       },
       {
-        handle: "c2",
-        name: "C2",
-        description: "Desc2",
-        numEmployees: 2,
-        logoUrl: "http://c2.img",
+        id: jobIds[1],
+        title: "JobB",
+        salary: 100,
+        equity: "0.2",
+        companyHandle: "c1"
       },
       {
-        handle: "c3",
-        name: "C3",
-        description: "Desc3",
-        numEmployees: 3,
-        logoUrl: "http://c3.img",
+        id: jobIds[2],
+        title: "JobC",
+        salary: 1200,
+        equity: "0",
+        companyHandle: "c1"
       }
     ]);
   });
-  test("works: min employees", async function () {
-    let companies = await Company.findAll({minEmployees: 2});
-    expect(companies).toEqual([
+  test("works: min salary", async function () {
+    let jobs = await Job.findAll({minSalary: 1000});
+    expect(jobs).toEqual([
       {
-        handle: "c2",
-        name: "C2",
-        description: "Desc2",
-        numEmployees: 2,
-        logoUrl: "http://c2.img",
+        id: jobIds[0],
+        title: "JobA",
+        salary: 1000,
+        equity: "0.1",
+        companyHandle: "c1"
       },
       {
-        handle: "c3",
-        name: "C3",
-        description: "Desc3",
-        numEmployees: 3,
-        logoUrl: "http://c3.img",
+        id: jobIds[2],
+        title: "JobC",
+        salary: 1200,
+        equity: "0",
+        companyHandle: "c1"
       },
     ]);
   });
-  test("works: max employees", async function () {
-    let companies = await Company.findAll({maxEmployees: 2});
-    expect(companies).toEqual([
+  test("works: hasEquity", async function () {
+    let jobs = await Job.findAll({hasEquity: true});
+    expect(jobs).toEqual([
       {
-        handle: "c1",
-        name: "C1",
-        description: "Desc1",
-        numEmployees: 1,
-        logoUrl: "http://c1.img",
+        id: jobIds[0],
+        title: "JobA",
+        salary: 1000,
+        equity: "0.1",
+        companyHandle: "c1"
       },
       {
-        handle: "c2",
-        name: "C2",
-        description: "Desc2",
-        numEmployees: 2,
-        logoUrl: "http://c2.img",
+        id: jobIds[1],
+        title: "JobB",
+        salary: 100,
+        equity: "0.2",
+        companyHandle: "c1"
       }
     ]);
   });
-  test("throws error: min > max", async function () {
-    try{
-      await Company.findAll({minEmployees: 2, maxEmployees: 1});
-      fail();
-    } catch (err) {
-      expect(err instanceof BadRequestError).toBeTruthy();
-    }
-  });
+  
 
-  test("works: max & min", async function() {
-    let companies = await Company.findAll({minEmployees: 2, maxEmployees:2});
+  test("works: equity & min", async function() {
+    let companies = await Job.findAll({minSalary: 1000, hasEquity:true});
     expect(companies).toEqual([
       {
-      handle: "c2",
-      name: "C2",
-      description: "Desc2",
-      numEmployees: 2,
-      logoUrl: "http://c2.img",
-    }
+        id: jobIds[0],
+        title: "JobA",
+        salary: 1000,
+        equity: "0.1",
+        companyHandle: "c1"
+      }
     ]);
   });
 
   test("works: name filter", async function() { 
-    let companies = await Company.findAll({name: "2"});
-    expect(companies).toEqual([{
-      handle: "c2",
-      name: "C2",
-      description: "Desc2",
-      numEmployees: 2,
-      logoUrl: "http://c2.img",
+    let jobs = await Job.findAll({title: "c"});
+    expect(jobs).toEqual([{
+      id: jobIds[2],
+      title: "JobC",
+      salary: 1200,
+      equity: "0",
+      companyHandle: "c1"
     }]);
   });
   test("works: filter that finds nothing", async function(){
-    let companies = await Company.findAll({name:"2304"});
-    expect(companies).toEqual([])
+    let jobs = await Job.findAll({title:"2304"});
+    expect(jobs).toEqual([])
   });
-}); */
+}); 
 
 /************************************** get */
 
-/*
+
 describe("get", function () {
   test("works", async function () {
-    let company = await Company.get("c1");
-    expect(company).toEqual({
-      handle: "c1",
-      name: "C1",
-      description: "Desc1",
-      numEmployees: 1,
-      logoUrl: "http://c1.img",
+    let job = await Job.get(jobIds[2]);
+    expect(job).toEqual({
+      id: jobIds[2],
+      title: "JobC",
+      salary: 1200,
+      equity: "0",
+      companyHandle: "c1"
     });
   });
 
-  test("not found if no such company", async function () {
+  test("not found if no such job", async function () {
     try {
-      await Company.get("nope");
+      await Job.get(12300);
       fail();
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
 });
-*/
+
 /************************************** update */
 
-
-/*
 describe("update", function () {
   const updateData = {
-    name: "New",
-    description: "New Description",
-    numEmployees: 10,
-    logoUrl: "http://new.img",
+    title: "New",
+    salary: 1001
   };
 
   test("works", async function () {
-    let company = await Company.update("c1", updateData);
-    expect(company).toEqual({
-      handle: "c1",
-      ...updateData,
+    let job = await Job.update(jobIds[0], updateData);
+    expect(job).toEqual({
+      id: jobIds[0],
+      title: "New",
+      salary: 1001,
+      equity: "0.1",
+      companyHandle: "c1"
     });
-
-    const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
-           FROM companies
-           WHERE handle = 'c1'`);
-    expect(result.rows).toEqual([{
-      handle: "c1",
-      name: "New",
-      description: "New Description",
-      num_employees: 10,
-      logo_url: "http://new.img",
-    }]);
   });
 
   test("works: null fields", async function () {
     const updateDataSetNulls = {
-      name: "New",
-      description: "New Description",
-      numEmployees: null,
-      logoUrl: null,
+      title: "New",
+      salary: null,
+      equity: null,
     };
 
-    let company = await Company.update("c1", updateDataSetNulls);
-    expect(company).toEqual({
-      handle: "c1",
-      ...updateDataSetNulls,
+    let job = await Job.update(jobIds[0], updateDataSetNulls);
+    expect(job).toEqual({
+      id: jobIds[0],
+      title: "New",
+      salary: null,
+      equity: null,
+      companyHandle: "c1"
     });
-
-    const result = await db.query(
-          `SELECT handle, name, description, num_employees, logo_url
-           FROM companies
-           WHERE handle = 'c1'`);
-    expect(result.rows).toEqual([{
-      handle: "c1",
-      name: "New",
-      description: "New Description",
-      num_employees: null,
-      logo_url: null,
-    }]);
   });
 
-  test("not found if no such company", async function () {
+  test("not found if no such job", async function () {
     try {
-      await Company.update("nope", updateData);
+      await Job.update(124345, updateData);
       fail();
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
@@ -237,31 +207,30 @@ describe("update", function () {
 
   test("bad request with no data", async function () {
     try {
-      await Company.update("c1", {});
+      await Job.update(jobIds[0], {});
       fail();
     } catch (err) {
       expect(err instanceof BadRequestError).toBeTruthy();
     }
   });
-});*/
+});
 
 /************************************** remove */
-/*
+
 describe("remove", function () {
   test("works", async function () {
-    await Company.remove("c1");
+    await Job.remove(jobIds[0]);
     const res = await db.query(
-        "SELECT handle FROM companies WHERE handle='c1'");
+        "SELECT id FROM jobs WHERE id=$1", [jobIds[0]]);
     expect(res.rows.length).toEqual(0);
   });
 
-  test("not found if no such company", async function () {
+  test("not found if no such job", async function () {
     try {
-      await Company.remove("nope");
+      await Job.remove(100000);
       fail();
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
-  */
 });

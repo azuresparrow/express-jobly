@@ -21,7 +21,7 @@ class Job {
           `INSERT INTO jobs
            (title, salary, equity, company_handle)
            VALUES ($1, $2, $3, $4)
-           RETURNING title, salary, equity, company_handle AS "companyHandle"`,
+           RETURNING id, title, salary, equity, company_handle AS "companyHandle"`,
         [
           title,
           salary,
@@ -74,8 +74,8 @@ class Job {
       query += ' WHERE ' + conditionals.join(' AND ');
     } 
     query += ' ORDER BY title';
-    const companiesRes = await db.query(query, values);
-    return companiesRes.rows;
+    const job = await db.query(query, values);
+    return job.rows;
   }
 
   /** Given a job id, return data about it.
@@ -129,7 +129,7 @@ class Job {
                       RETURNING id, 
                                 title, 
                                 salary, 
-                                equity
+                                equity,
                                 company_handle AS "companyHandle"`;
     const result = await db.query(querySql, [...values, id]);
     const job = result.rows[0];
@@ -141,21 +141,20 @@ class Job {
 
   /** Delete given job from database; returns undefined.
    *
-   * Throws NotFoundError if company not found.
+   * Throws NotFoundError if job not found.
    **/
 
-  static async remove(handle) {
+  static async remove(id) {
     const result = await db.query(
           `DELETE
-           FROM companies
-           WHERE handle = $1
-           RETURNING handle`,
-        [handle]);
-    const company = result.rows[0];
+           FROM jobs
+           WHERE id = $1
+           RETURNING id`,
+        [id]);
+    const job = result.rows[0];
 
-    if (!company) throw new NotFoundError(`No company: ${handle}`);
+    if (!job) throw new NotFoundError(`No job: ${id}`);
   }
 }
-
 
 module.exports = Job;

@@ -47,6 +47,9 @@ class Company {
   /** Find all companies.
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   * 
+   * Able to filter by partial company name, case insensitive
+   * Able to filter by minimum and maximum employees
    * */
 
   static async findAll(filters = {}) {

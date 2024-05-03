@@ -119,4 +119,20 @@ router.delete("/:username", ensureCorrectOrAdmin, async function (req, res, next
 });
 
 
+/** POST /[username]/jobs/[id] 
+ * 
+ * Applies a user for a job
+ * 
+*/
+
+router.post("/:username/jobs/:id", ensureCorrectOrAdmin, async function(req, res, next){
+  try {
+    const application = await User.apply(req.params.username, req.params.id);
+    const token = createToken(user);
+    return res.status(201).json({ user, token });
+  } catch (err) {
+    return next(err);
+  }
+})
+
 module.exports = router;

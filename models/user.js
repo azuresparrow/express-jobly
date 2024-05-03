@@ -139,6 +139,9 @@ class User {
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
 
+    const applications = await db.query(`SELECT job_id FROM applications WHERE username=$1 ORDER BY id`, [username]);
+    
+    user.jobs = applications.rows;
     return user;
   }
 
@@ -204,7 +207,16 @@ class User {
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
+  /** Applies a given user for a job */
+  static async apply(username, id){
+    let result = await db.query(
+      `INSERT INTO applications (username, job_id) VALUES ($1, $2) RETURNING job_id as "applied"`,
+    [username, id]);
+    return result;
+  }
 }
+
+
 
 
 module.exports = User;
